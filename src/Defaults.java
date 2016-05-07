@@ -3,5 +3,5 @@
  */
 public class Defaults {
     public enum RobotType {Neutral, Rescuer, Enemy}
-    public static int WindowH = 500, WindowW = 500;
+    public static int WindowH = 500, WindowW = 500, OvalW = 7, OvalH = 7;
 }

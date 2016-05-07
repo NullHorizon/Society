@@ -7,7 +7,8 @@ import java.awt.event.ActionListener;
  * Created by CallMeF3AR on 28.04.2016.
  */
 public class ToolsForm extends JPanel {
-    private SwingWorker worker;
+    //ivate SwingWorker worker;
+
     public void start()
     {
         JFrame f = new JFrame("Controls");
@@ -27,15 +28,12 @@ public class ToolsForm extends JPanel {
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        if (worker != null && worker.getState() == SwingWorker.StateValue.STARTED)
-                        {
-                            Main.Ctrls.exitSimulate();
-                            worker.cancel(true);
-                        }
-                        worker = new SwingWorker<Void, Void>() {
+                        SwingWorker worker = new SwingWorker<Void, Void>() {
                             @Override
                             public Void doInBackground() {
-                                Main.Ctrls.startSimulate();
+                                Controls Ctrls = new Controls();
+                                Ctrls.ID = Thread.currentThread().getId();
+                                Ctrls.startSimulate();
                                 return null;
                             }
                         };
@@ -44,19 +42,20 @@ public class ToolsForm extends JPanel {
                     }
                 }
         );
+
         Btn2.addActionListener(
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        Main.Ctrls.continueSimulate();
-                    }
-                }
-        );
-        Btn3.addActionListener(
-                new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        Main.Ctrls.stopSimulate();
+                        SwingWorker worker = new SwingWorker<Void, Void>() {
+                            @Override
+                            public Void doInBackground() {
+                                Controls Ctrls = new Controls();
+                                Ctrls.ID = Thread.currentThread().getId();
+                                return null;
+                            }
+                        };
+                        worker.execute();
                     }
                 }
         );

@@ -5,6 +5,7 @@ import java.util.Vector;
 
 /**
  * Created by CallMeF3AR on 27.04.2016.
+	edt in may 8
  */
 public class Territory {
     private Vector<Room> Rooms;

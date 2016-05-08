@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Vector;
 
@@ -61,6 +60,49 @@ public class Controls {
         return;
     }
 
+    private Territory generateTerritory()
+    {
+        Territory currentTerritory = new Territory();
+        Polygon p = new Polygon();
+        p.addPoint(50, 50);
+        p.addPoint(50, 200);
+        p.addPoint(200, 200);
+        p.addPoint(200, 50);
+        Territory.Room x = new Territory.Room(Defaults.RoomBorderColor, Defaults.RoomInsideColor, Defaults.RoomBorderWidth, 0);
+        x.setPolygon(p);
+        Territory.Room.Box Box = new Territory.Room.Box(Defaults.BoxBorderColor, Defaults.BoxInsideColor, Defaults.BoxBorderWidth, 0);;
+        Polygon p1 = new Polygon();
+        p1.addPoint(100, 100);
+        p1.addPoint(100, 150);
+        p1.addPoint(150, 150);
+        p1.addPoint(150, 100);
+        Box.setPolygon(p1);
+        x.addBox(Box);
+        x.addExit(new Territory.Room.Exit(new Point(200, 100), new Point(200, 150), 0));
+        x.addExit(new Territory.Room.Exit(new Point(100, 200), new Point(150, 200), 1));
+        currentTerritory.addRoom(x);
+
+        Territory.Room y = new Territory.Room(Defaults.RoomBorderColor, Defaults.RoomInsideColor, Defaults.RoomBorderWidth, 1);
+        p = new Polygon();
+        p.addPoint(200, 50);
+        p.addPoint(200, 200);
+        p.addPoint(400, 200);
+        p.addPoint(400, 50);
+        y.setPolygon(p);
+        currentTerritory.addRoom(y);
+
+        y = new Territory.Room(Defaults.RoomBorderColor, Defaults.RoomInsideColor, Defaults.RoomBorderWidth, 1);
+        p = new Polygon();
+        p.addPoint(50, 200);
+        p.addPoint(200, 200);
+        p.addPoint(200, 350);
+        p.addPoint(50, 350);
+        y.setPolygon(p);
+        currentTerritory.addRoom(y);
+
+        return currentTerritory;
+    }
+
     public void startSimulate()
     {
         Break = false;
@@ -68,13 +110,7 @@ public class Controls {
 
         System.out.println(ID);
 
-        Terr = new Territory();
-        Point pts[] = new Point[4];
-        pts[0] = new Point(50, 50);
-        pts[1] = new Point(50, 200);
-        pts[2] = new Point(200, 200);
-        pts[3] = new Point(200, 50);
-        Terr.setPolygonPoints(pts);
+        Terr = generateTerritory();
 
         Flock = new Flock();
         Random rnd = new Random();
@@ -94,12 +130,6 @@ public class Controls {
                         break;
                 }
             }
-        HashSet<Point> Exit = new HashSet<Point>();
-        Exit.add(new Point(200, 100));
-        Exit.add(new Point(210, 125));
-        Exit.add(new Point(200, 150));
-        Terr.addExit(Exit);
-
         CurrentSimulation = new Simulation();
         CurrentSimulation.setVisible(true);
         CurrentSimulation.Start(Terr, Flock);
@@ -128,38 +158,43 @@ public class Controls {
         {
             //System.out.println(g.hashCode());
             Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(Color.DARK_GRAY);
+            g2.setColor(Color.WHITE);
             g2.fillRect(0, 0, Defaults.WindowW, Defaults.WindowH - Bottom);
             //Drawing WorkArea
             Territory Terr = CurrentTerritory;
 
-            //Drawing Main Polygon
-            Point Points[] = Terr.getPolygonPoints();
-            Polygon p = new Polygon();
-            for(int i = 0; i < Points.length; i++)
+            //Drawing Rooms
+            Vector<Territory.Room> Rooms = Terr.getRooms();
+            for(int i = 0; i < Rooms.size(); i++)
             {
-                p.addPoint(Points[i].x, Points[i].y);
+                g2.setColor(Rooms.get(i).getInsideColor());
+                g2.fillPolygon(Rooms.get(i).getPolygon());
+                g2.setColor(Rooms.get(i).getBorderColor());
+                g2.setStroke(new BasicStroke(Rooms.get(i).getBorderWidth()));
+                g2.drawPolygon(Rooms.get(i).getPolygon());
+                //Drawing Boxes
+                Vector<Territory.Room.Box> Boxes = Rooms.get(i).getBoxes();
+                for(int j = 0; j < Boxes.size(); j++)
+                {
+                    g2.setColor(Boxes.get(i).getInsideColor());
+                    g2.fillPolygon(Boxes.get(i).getPolygon());
+                    g2.setColor(Boxes.get(i).getBorderColor());
+                    g2.setStroke(new BasicStroke(Boxes.get(i).getBorderWidth()));
+                    g2.drawPolygon(Boxes.get(i).getPolygon());
+                }
             }
-            g2.setColor(Terr.getInsideColor());
-            g2.fillPolygon(p);
-            g2.setColor(Terr.getBorderColor());
-            g2.setStroke(new BasicStroke(Terr.getBorderWidth()));
-            g2.drawPolygon(p);
+
+            //Drawing Exits
+            //Если делать в общем цикле - перекрываются стенками комнат
+            g2.setColor(Color.RED);
+            for(int i = 0; i < Rooms.size(); i++) {
+                Vector<Territory.Room.Exit> Exits = Rooms.get(i).getExits();
+                for (int j = 0; j < Exits.size(); j++) {
+                    g2.drawLine(Exits.get(j).First.x, Exits.get(j).First.y, Exits.get(j).Second.x, Exits.get(j).Second.y);
+                }
+            }
+
             g2.setStroke(new BasicStroke());
-            p.reset();
-
-            //Drawing EXITS
-            Vector<HashSet<Point>> Exits = Terr.getExits();
-            for(int i = 0; i < Exits.size(); i++)
-            {
-                p = new Polygon();
-                for (Point pt : Exits.get(i))
-                    p.addPoint(pt.x, pt.y);
-                g2.setColor(Color.RED);
-                g2.fillPolygon(p);
-                g2.drawPolygon(p);
-            }
-
             //Drawing Individs in Flock
             Flock Flock = CurrentFlock;
             Vector<Individ> Members = Flock.getMembers();
